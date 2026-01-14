@@ -98,3 +98,22 @@ jobs:
         with:
           name: zap-scan-report
           path: report.html
+
+  # --- JOB 4: Deploy
+  simulate-deploy:
+    needs: build-and-test # Waits for tests & docker build to finish
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' # Only run on main branch
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Kubernetes Deployment (Simulation)
+        run: |
+          echo "🔹 Authenticating with Kubernetes Cluster..."
+          echo "🔹 Apply Configuration: kubectl apply -f k8s/deployment.yaml"
+          echo "🔹 Apply Service: kubectl apply -f k8s/service.yaml"
+          echo "🔹 Apply Observability: kubectl apply -f k8s/jaeger.yaml"
+          echo "🔹 Apply Monitoring: kubectl apply -f k8s/prometheus.yaml"
+          echo "✅ Deployment Successful! Application is live."
