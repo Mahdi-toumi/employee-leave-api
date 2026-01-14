@@ -37,7 +37,7 @@ Ensure you have the following installed:
 ## 🐍 Local Setup (Python)
 To run the application without Docker (for development):
 
-\`\`\`bash
+```bash
 # 1. Create virtual environment
 python -m venv venv
 # Windows:
@@ -50,7 +50,7 @@ pip install -r requirements.txt
 
 # 3. Run the app
 uvicorn app.main:app --reload
-\`\`\`
+```
 Access Swagger UI at: http://localhost:8000/docs
 
 ---
@@ -58,18 +58,18 @@ Access Swagger UI at: http://localhost:8000/docs
 ## 🐳 Docker Usage
 
 ### Build and Run with Docker
-\`\`\`bash
+```bash
 # Build the image
 docker build -t employee-leave-api:latest .
 
 # Run the container
 docker run -d -p 8000:8000 --name leave-api employee-leave-api:latest
-\`\`\`
+```
 
 ### Run with Docker Compose (Includes Jaeger & Prometheus)
-\`\`\`bash
+```bash
 docker-compose up -d
-\`\`\`
+```
 * **API:** http://localhost:8000/docs
 * **Jaeger UI:** http://localhost:16686
 * **Prometheus:** http://localhost:9090
@@ -81,13 +81,13 @@ docker-compose up -d
 This project uses **Minikube** to simulate a production cluster.
 
 ### 1. Start Minikube
-\`\`\`bash
+```bash
 minikube start
-\`\`\`
+```
 
 ### 2. Apply Manifests
 Deploy the App, Jaeger, and Prometheus:
-\`\`\`bash
+```bash
 # Deploy the Application
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
@@ -95,13 +95,13 @@ kubectl apply -f k8s/service.yaml
 # Deploy Observability Stack
 kubectl apply -f k8s/jaeger.yaml
 kubectl apply -f k8s/prometheus.yaml
-\`\`\`
+```
 
 ### 3. Verify Deployment
 Wait until all pods are Running:
-\`\`\`bash
+```bash
 kubectl get pods
-\`\`\`
+```
 
 ---
 
@@ -111,31 +111,31 @@ kubectl get pods
 The application writes structured JSON logs to both the terminal and a file inside the container.
 
 **Method A: Stream logs in terminal**
-\`\`\`bash
+```bash
 # Get pod name
 kubectl get pods
 # Stream logs
 kubectl logs -f <POD_NAME>
-\`\`\`
+```
 
 **Method B: Download log file (Persistent Log)**
-\`\`\`bash
+```bash
 # Copy the log file from the container to your local machine
 kubectl cp <POD_NAME>:/app/app.log ./app.log
-\`\`\`
+```
 
 **Method C: Read file directly inside Pod**
-\`\`\`bash
+```bash
 kubectl exec <POD_NAME> -- cat app.log
-\`\`\`
+```
 
 ### 2. Metrics (Prometheus)
 Visualizes HTTP request rates and performance.
 
 1.  **Port-forward Prometheus:**
-    \`\`\`bash
+    ```bash
     kubectl port-forward svc/prometheus-service 9090:9090
-    \`\`\`
+    ```
 2.  **Access Dashboard:** Open http://localhost:9090
 3.  **Query:** Type \`http_requests_total\` and click "Graph".
 
@@ -143,11 +143,11 @@ Visualizes HTTP request rates and performance.
 Visualizes the request lifecycle across microservices.
 
 1.  **Port-forward Jaeger:**
-    \`\`\`bash
+    ```bash
     kubectl port-forward svc/jaeger-service 16686:16686
-    \`\`\`
+    ```
 2.  **Access UI:** Open http://localhost:16686
-3.  **Find Traces:** Select \`EmployeeLeaveAPI\` and search.
+3.  **Find Traces:** Select \`employee_leave_api\` and search.
 
 ---
 
