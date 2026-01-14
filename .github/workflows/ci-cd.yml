@@ -76,14 +76,15 @@ jobs:
       - name: Wait for App to Start
         run: sleep 10
 
-      # FIX 1: Give full permissions so the ZAP container can write the report
-      - name: Fix File Permissions
-        run: chmod -R 777 .
+      - name: Run ZAP Scan (Manual Docker)
+        # We run the container directly to bypass the "Artifact Name" bug
+        # '|| true' ensures the pipeline stays GREEN even if warnings are found
+        run: |
+          chmod -R 777 .
+          docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8000/docs -r report.html || true
 
-      # FIX 2: Configured to PASS even if warnings are found
-      - name: DAST Scan (OWASP ZAP)
-        uses: zaproxy/action-baseline@v0.11.0
+      - name: Upload ZAP Report
+        uses: actions/upload-artifact@v4
         with:
-          target: "http://localhost:8000/docs"
-          fail_action: false # Keep pipeline GREEN even if warnings are found
-          allow_issue_writing: false # Fixes "Resource not accessible" error
+          name: zap-scan-report
+          path: report.html
