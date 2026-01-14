@@ -1,12 +1,22 @@
 import uuid
+import sys  
+import logging 
 from typing import Dict
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from prometheus_fastapi_instrumentator import Instrumentator
 import structlog
-import logging
 
-# 1. Setup Structured Logging (JSON Logs)
+# 1. Setup Logging (File + Terminal)
+logging.basicConfig(
+    format="%(message)s",
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler("app.log"),   # Writes to file inside container
+        logging.StreamHandler(sys.stdout) # Writes to terminal (Kubernetes logs)
+    ]
+)
+
 structlog.configure(
     processors=[structlog.processors.JSONRenderer()],
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -25,13 +35,12 @@ class Leave(BaseModel):
     days: int
     status: str = "Pending"
 
-# Simple in-memory database (reset when app restarts)
+# Simple in-memory database
 db: Dict[str, Leave] = {}
 
 # 4. Middleware: Logs every request automatically
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
-    # Generate a unique ID for every request (Basic Tracing)
     request_id = str(uuid.uuid4())
     log = logger.bind(method=request.method, path=request.url.path, req_id=request_id)
     

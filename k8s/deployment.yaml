@@ -27,3 +27,6 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://jaeger-service:4317"
