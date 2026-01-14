@@ -15,7 +15,7 @@ spec:
       containers:
         - name: leave-api
           # CHANGE THIS to your actual Docker Hub username!
-          image: <YOUR_DOCKER_USERNAME>/employee-leave-api:latest
+          image: toumimahdi/employee-leave-api:latest
           ports:
             - containerPort: 8000
           imagePullPolicy: Always
