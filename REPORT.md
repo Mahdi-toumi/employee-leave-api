@@ -4,34 +4,42 @@
 **Date:** January 2026
 
 ## 1. Introduction
-This project implements a complete DevOps lifecycle for a backend service. I designed a lightweight REST API for Employee Leave Management using **FastAPI** (Python). The goal was to practice end-to-end automation, from coding to containerization, security, and Kubernetes deployment.
+This project implements a complete DevOps lifecycle for a backend service. I designed a lightweight REST API for Employee Leave Management using **FastAPI**. The goal was to practice end-to-end automation, from coding to containerization, security, and Kubernetes deployment.
 
-## 2. Architecture & Tools
-* **Backend:** FastAPI (Python 3.10) chosen for performance and automatic Swagger documentation.
-* **Database:** In-memory dictionary to keep the service lightweight (<150 lines of code).
-* **Containerization:** **Docker** (multi-stage build) to create immutable artifacts.
-* **Orchestration:** **Kubernetes (Minikube)** for managing deployments, services, and scaling.
-* **CI/CD:** **GitHub Actions** for automated testing and deployment.
+## 2. Git Workflow & Collaboration
+To simulate a professional environment, I strictly adhered to DevOps best practices:
+* **Task Tracking:** Used GitHub Issues to track deliverables (e.g., #1 Backend, #6 K8s).
+* **Branching:** Utilized feature branches (e.g., `feat/backend`, `ops/docker`) instead of committing to main.
+* **Conventional Commits:** Used standardized commit messages (e.g., `feat: ...`, `fix: ...`) for a clean history.
+* **Code Reviews:** All features were merged via Pull Requests (PRs). I simulated peer reviews by commenting on code quality, security implications, and best practices before merging.
 
-## 3. Observability Strategy (The 3 Pillars)
-I implemented full-stack observability to monitor the application health in production:
-1.  **Logs:** Used \`structlog\` to generate structured **JSON logs**. Logs are written to \`stdout\` (for kubectl logs) and persisted to \`app.log\` inside the container for file-based retrieval.
-2.  **Metrics:** Deployed a **Prometheus** server in the cluster. It scrapes the \`/metrics\` endpoint exposed by \`prometheus-fastapi-instrumentator\` to track request rates and latency.
-3.  **Traces:** Deployed **Jaeger** in the cluster. The application is instrumented with OpenTelemetry to send traces to Jaeger, allowing visualization of request flows.
+## 3. Architecture & Tools
+* **Backend:** FastAPI (Python 3.10) - Chosen for high performance and automatic Swagger UI.
+* **Containerization:** Docker - Used multi-stage builds (`python:3.10-slim`) to keep image size low.
+* **Orchestration:** Kubernetes (Minikube) - Managed Deployment, Service, and ConfigMaps.
 
-## 4. Security Implementation (DevSecOps)
-Security was integrated into the pipeline ("Shift Left"):
-* **SAST (Static Analysis):** Used **Bandit** to scan source code for common Python vulnerabilities (e.g., hardcoded secrets).
-* **DAST (Dynamic Analysis):** Used **OWASP ZAP** to scan the running container for runtime issues (e.g., missing security headers like CSP).
-* **Results:** The pipeline generates and uploads security reports as artifacts on every build.
+## 4. CI/CD Pipeline (GitHub Actions)
+I built a robust pipeline that ensures only high-quality code reaches production:
+1.  **Automated Testing:** Runs `pytest` with `pytest-cov`. I achieved **>95% code coverage**, ensuring reliability.
+2.  **Security Gates:**
+    * **SAST (Bandit):** Scans code for vulnerabilities before the build.
+    * **DAST (OWASP ZAP):** Scans the running container for HTTP vulnerabilities (e.g., missing headers).
+3.  **Artifact Management:** Security reports and coverage results are uploaded as GitHub Artifacts for audit trails.
+4.  **Deployment Simulation:** A final stage verifies that Kubernetes manifests can be applied without errors.
 
-## 5. Kubernetes Setup
-The application is deployed using declarative manifests:
-* **Deployment:** Defines the Pods, replicas, and resource limits (CPU/Memory).
-* **Service:** Exposes the API via a LoadBalancer (or NodePort in Minikube).
-* **Sidecars/Addons:** Prometheus and Jaeger are deployed as separate services within the same namespace to support monitoring.
+## 5. Observability Strategy
+I implemented the "Three Pillars of Observability" to monitor the system:
+1.  **Logs:** Used `structlog` for JSON logging. Logs are written to `stdout` (for K8s) and persisted to `app.log` inside the container, retrievable via `kubectl cp`.
+2.  **Metrics:** Deployed **Prometheus** to scrape the `/metrics` endpoint, tracking request rates and error counts.
+3.  **Traces:** Deployed **Jaeger** and instrumented the app with OpenTelemetry. This visualizes the request path and latency across the system.
 
-## 6. Lessons Learned
-* **Persistence:** Learned how to extract files from pods using \`kubectl cp\` and \`kubectl exec\`.
-* **Networking:** Understanding Service DNS (\`http://jaeger-service:4317\`) was critical to connect the App to the Tracing backend.
-* **Automation:** The CI/CD pipeline significantly reduces manual errors by automatically testing and scanning code before pushing to Docker Hub.
+## 6. Kubernetes Setup
+The deployment is fully declarative:
+* **Deployment:** Defines 1 replica with CPU/Memory limits to prevent resource exhaustion.
+* **Service:** Uses a LoadBalancer strategy to expose the API.
+* **Integration:** The App Pod connects to Jaeger and Prometheus services using internal ClusterDNS names (e.g., `http://jaeger-service:4317`).
+
+## 7. Lessons Learned
+* **Permissions in CI:** Running DAST scans in Docker requires root permissions (`-u 0`) to write reports to the GitHub runner volume.
+* **Service Discovery:** In Kubernetes, services must communicate via DNS names, not `localhost`.
+* **Process Matters:** Using Conventional Commits and PRs makes the project history readable and professional.
