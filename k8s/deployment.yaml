@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leave-api
+spec:
+  replicas: 1 # How many copies of the app to run
+  selector:
+    matchLabels:
+      app: leave-api
+  template:
+    metadata:
+      labels:
+        app: leave-api
+    spec:
+      containers:
+        - name: leave-api
+          # CHANGE THIS to your actual Docker Hub username!
+          image: <YOUR_DOCKER_USERNAME>/employee-leave-api:latest
+          ports:
+            - containerPort: 8000
+          imagePullPolicy: Always
+          # Best Practice: Limit memory so one app doesn't crash the server
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
