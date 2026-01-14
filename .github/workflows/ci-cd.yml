@@ -101,7 +101,7 @@ jobs:
 
   # --- JOB 4: Deploy
   simulate-deploy:
-    needs: build-and-test # Waits for tests & docker build to finish
+    needs: dast-scan # Waits for dast-scan to finish
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' # Only run on main branch
 
