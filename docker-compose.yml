@@ -1,28 +1,46 @@
 version: '3.8'
+
 services:
-  # Your API Service
+  # 1. Your API Service
   api:
     build: .
     ports:
       - "8000:8000"
     environment:
-      # Tell the API where to send traces (to Jaeger)
+      # L'API envoie les traces au service "jaeger" sur le port 4317
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       - jaeger
       - prometheus
 
-  # Jaeger (Tracing UI)
+  # 2. Jaeger (Tracing)
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
-      - "16686:16686" # Web UI
-      - "4317:4317"   # Port for receiving traces
+      - "16686:16686" # UI pour voir les traces
+      - "4317:4317"   # Port pour recevoir les traces (OTLP gRPC)
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
 
-  # Prometheus (Metrics DB)
+  # 3. Prometheus (Metrics DB)
   prometheus:
     image: prom/prometheus
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  # 4. Grafana (Dashboard Visualization) - NOUVEAU
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      # On injecte la configuration pour qu'il trouve Prometheus tout seul
+      - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    environment:
+      # Désactive le login (pas besoin de mot de passe en local)
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    depends_on:
+      - prometheus
